@@ -2,13 +2,13 @@
 #define wasmopt_shims_h
 
 #include "pass.h"
-#include "wasm-io.h"
 #include "support/colors.h"
-#include "wasm-validator.h"
 #include "wasm-features.h"
+#include "wasm-io.h"
+#include "wasm-validator.h"
 
+#include <memory>    // unique_ptr
 #include <stdexcept> // runtime_error
-#include <memory> // unique_ptr
 
 namespace rust::behavior {
   template <typename Try, typename Fail>
@@ -85,18 +85,16 @@ namespace wasm_shims {
     void setSourceMapUrl(const std::string& source_map_url) {
       wasm::ModuleWriter::setSourceMapUrl(source_map_url);
     }
-  
-    void writeText(Module& wasm,
-                   const std::string& filename) {
+
+    void writeText(Module& wasm, const std::string& filename) {
       wasm::ModuleWriter::writeText(wasm, std::string(filename));
     }
 
-    void writeBinary(Module& wasm,
-                     const std::string& filename) {
+    void writeBinary(Module& wasm, const std::string& filename) {
       wasm::ModuleWriter::writeBinary(wasm, std::string(filename));
     }
   };
-    
+
   std::unique_ptr<ModuleWriter> newModuleWriter() {
     return std::make_unique<ModuleWriter>();
   }
@@ -110,7 +108,8 @@ namespace wasm_shims {
 
   std::unique_ptr<std::string> getPassDescription(const std::string& name) {
     auto r = wasm::PassRegistry::get();
-    return std::make_unique<std::string>(r->getPassDescription(std::string(name)));
+    return std::make_unique<std::string>(
+        r->getPassDescription(std::string(name)));
   }
 
   bool isPassHidden(const std::string& name) {
@@ -141,7 +140,7 @@ namespace wasm_shims {
       this->partialInliningIfs = number;
     }
   };
-    
+
   std::unique_ptr<InliningOptions> newInliningOptions() {
     return std::make_unique<InliningOptions>();
   }
@@ -165,10 +164,11 @@ namespace wasm_shims {
       this->shrinkLevel = level;
     }
 
-    void setInliningOptions(std::unique_ptr<wasm_shims::InliningOptions> inlining) {
+    void
+    setInliningOptions(std::unique_ptr<wasm_shims::InliningOptions> inlining) {
       this->inlining = *inlining;
     }
-    
+
     void setTrapsNeverHappen(bool ignoreTraps) {
       this->trapsNeverHappen = ignoreTraps;
     }
@@ -241,7 +241,9 @@ namespace wasm_shims {
     return std::make_unique<std::vector<uint32_t>>(f);
   }
 
-  void applyFeatures(wasm::Module& wasm, std::unique_ptr<WasmFeatureSet> enabledFeatures, std::unique_ptr<WasmFeatureSet> disabledFeatures) {
+  void applyFeatures(wasm::Module& wasm,
+                     std::unique_ptr<WasmFeatureSet> enabledFeatures,
+                     std::unique_ptr<WasmFeatureSet> disabledFeatures) {
     wasm.features.enable(*enabledFeatures);
     wasm.features.disable(*disabledFeatures);
   }
@@ -262,7 +264,9 @@ namespace wasm_shims {
     return std::make_unique<PassRunner>(&wasm);
   }
 
-  std::unique_ptr<PassRunner> newPassRunnerWithOptions(Module& wasm, std::unique_ptr<wasm_shims::PassOptions> options) {
+  std::unique_ptr<PassRunner>
+  newPassRunnerWithOptions(Module& wasm,
+                           std::unique_ptr<wasm_shims::PassOptions> options) {
     return std::make_unique<PassRunner>(&wasm, *options);
   }
 
@@ -278,17 +282,23 @@ namespace wasm_shims {
     // The size assertion will fail when `InliningOptions` fields change,
     // which indicates the current test need to be updated.
     assert(sizeof(*inliningOptionsDefaults) == 20);
-    
-    bool isEqual = (inlining->alwaysInlineMaxSize == inliningOptionsDefaults->alwaysInlineMaxSize)
-      && (inlining->oneCallerInlineMaxSize == inliningOptionsDefaults->oneCallerInlineMaxSize)
-      && (inlining->flexibleInlineMaxSize == inliningOptionsDefaults->flexibleInlineMaxSize)
-      && (inlining->allowFunctionsWithLoops == inliningOptionsDefaults->allowFunctionsWithLoops)
-      && (inlining->partialInliningIfs == inliningOptionsDefaults->partialInliningIfs);
-    
+
+    bool isEqual = (inlining->alwaysInlineMaxSize
+                    == inliningOptionsDefaults->alwaysInlineMaxSize)
+        && (inlining->oneCallerInlineMaxSize
+            == inliningOptionsDefaults->oneCallerInlineMaxSize)
+        && (inlining->flexibleInlineMaxSize
+            == inliningOptionsDefaults->flexibleInlineMaxSize)
+        && (inlining->allowFunctionsWithLoops
+            == inliningOptionsDefaults->allowFunctionsWithLoops)
+        && (inlining->partialInliningIfs
+            == inliningOptionsDefaults->partialInliningIfs);
+
     return isEqual;
   }
 
-  bool checkPassOptions(std::unique_ptr<PassOptions> passOptions, wasm::PassOptions passOptionsDefaults) {
+  bool checkPassOptions(std::unique_ptr<PassOptions> passOptions,
+                        wasm::PassOptions passOptionsDefaults) {
 
     // The size assertion will fail when `PassOptions` or `InliningOptions` fields change.
     // We need to update the test when the size assertion failed.
@@ -298,22 +308,30 @@ namespace wasm_shims {
     // std::cout << " -------- size of optimizationsOptions " << sizeof(passOptionsDefaults);
 
     bool isEqual = (passOptions->debug == passOptionsDefaults.debug)
-      && (passOptions->validate == passOptionsDefaults.validate)
-      && (passOptions->validateGlobally == passOptionsDefaults.validateGlobally)
-      && (passOptions->optimizeLevel == passOptionsDefaults.optimizeLevel) 
-      && (passOptions->shrinkLevel == passOptionsDefaults.shrinkLevel)
-      && (passOptions->trapsNeverHappen == passOptionsDefaults.trapsNeverHappen)
-      && (passOptions->lowMemoryUnused == passOptionsDefaults.lowMemoryUnused)
-      && (passOptions->fastMath == passOptionsDefaults.fastMath)
-      && (passOptions->zeroFilledMemory == passOptionsDefaults.zeroFilledMemory)
-      && (passOptions->debugInfo == passOptionsDefaults.debugInfo)
-      // inlining fields comparison
-      && (passOptions->inlining.alwaysInlineMaxSize == passOptionsDefaults.inlining.alwaysInlineMaxSize)
-      && (passOptions->inlining.oneCallerInlineMaxSize == passOptionsDefaults.inlining.oneCallerInlineMaxSize)
-      && (passOptions->inlining.flexibleInlineMaxSize == passOptionsDefaults.inlining.flexibleInlineMaxSize)
-      && (passOptions->inlining.allowFunctionsWithLoops == passOptionsDefaults.inlining.allowFunctionsWithLoops)
-      && (passOptions->inlining.partialInliningIfs == passOptionsDefaults.inlining.partialInliningIfs);
-   
+        && (passOptions->validate == passOptionsDefaults.validate)
+        && (passOptions->validateGlobally
+            == passOptionsDefaults.validateGlobally)
+        && (passOptions->optimizeLevel == passOptionsDefaults.optimizeLevel)
+        && (passOptions->shrinkLevel == passOptionsDefaults.shrinkLevel)
+        && (passOptions->trapsNeverHappen
+            == passOptionsDefaults.trapsNeverHappen)
+        && (passOptions->lowMemoryUnused == passOptionsDefaults.lowMemoryUnused)
+        && (passOptions->fastMath == passOptionsDefaults.fastMath)
+        && (passOptions->zeroFilledMemory
+            == passOptionsDefaults.zeroFilledMemory)
+        && (passOptions->debugInfo == passOptionsDefaults.debugInfo)
+        // inlining fields comparison
+        && (passOptions->inlining.alwaysInlineMaxSize
+            == passOptionsDefaults.inlining.alwaysInlineMaxSize)
+        && (passOptions->inlining.oneCallerInlineMaxSize
+            == passOptionsDefaults.inlining.oneCallerInlineMaxSize)
+        && (passOptions->inlining.flexibleInlineMaxSize
+            == passOptionsDefaults.inlining.flexibleInlineMaxSize)
+        && (passOptions->inlining.allowFunctionsWithLoops
+            == passOptionsDefaults.inlining.allowFunctionsWithLoops)
+        && (passOptions->inlining.partialInliningIfs
+            == passOptionsDefaults.inlining.partialInliningIfs);
+
     return isEqual;
   }
 
@@ -324,11 +342,11 @@ namespace wasm_shims {
   }
 
   bool checkPassOptionsDefaultsOs(std::unique_ptr<PassOptions> passOptions) {
-    auto passOptionsDefaults = wasm::PassOptions::getWithDefaultOptimizationOptions();
+    auto passOptionsDefaults =
+        wasm::PassOptions::getWithDefaultOptimizationOptions();
 
     return checkPassOptions(std::move(passOptions), passOptionsDefaults);
   }
 }
 
 #endif // wasmopt_shims_h
-
