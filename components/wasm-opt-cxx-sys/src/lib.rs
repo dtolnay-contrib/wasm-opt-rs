@@ -51,7 +51,7 @@ pub mod wasm {
 
         fn setDebugInfo(self: Pin<&mut Self>, debug: bool);
 
-        fn setDwarf(self: Pin<&mut Self>, dwarf: bool);
+        fn setDWARF(self: Pin<&mut Self>, dwarf: bool);
 
         fn readText(
             self: Pin<&mut Self>,

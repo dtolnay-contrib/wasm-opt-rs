@@ -44,35 +44,28 @@ namespace wasm_shims {
 }
 
 namespace wasm_shims {
-  struct ModuleReader {
-    wasm::ModuleReader inner;
-
-    void setDebugInfo(bool debug) {
-      inner.setDebugInfo(debug);
-    }
-
-    void setDwarf(bool dwarf) {
-      inner.setDWARF(dwarf);
-    }
+  struct ModuleReader : wasm::ModuleReader {
+    using wasm::ModuleReader::setDebugInfo;
+    using wasm::ModuleReader::setDWARF;
 
     void readText(const std::string& filename, Module& wasm) {
-      inner.readText(std::string(filename), wasm);
+      wasm::ModuleReader::readText(std::string(filename), wasm);
     }
 
     void readBinary(const std::string& filename,
                     Module& wasm,
                     const std::string& sourceMapFilename) {
-      inner.readBinary(std::string(filename),
-                       wasm,
-                       std::string(sourceMapFilename));
+      wasm::ModuleReader::readBinary(std::string(filename),
+                                     wasm,
+                                     std::string(sourceMapFilename));
     }
 
     void read(const std::string& filename,
               Module& wasm,
               const std::string& sourceMapFilename) {
-      inner.read(std::string(filename),
-                 wasm,
-                 std::string(sourceMapFilename));
+      wasm::ModuleReader::read(std::string(filename),
+                               wasm,
+                               std::string(sourceMapFilename));
     }
   };
 
@@ -82,29 +75,25 @@ namespace wasm_shims {
 }
 
 namespace wasm_shims {
-  struct ModuleWriter {
-    wasm::ModuleWriter inner;
-
-    void setDebugInfo(bool debug) {
-      inner.setDebugInfo(debug);
-    }
+  struct ModuleWriter : wasm::ModuleWriter {
+    using wasm::ModuleWriter::setDebugInfo;
 
     void setSourceMapFilename(const std::string& source_map_filename) {
-      inner.setSourceMapFilename(source_map_filename);
+      wasm::ModuleWriter::setSourceMapFilename(source_map_filename);
     }
 
     void setSourceMapUrl(const std::string& source_map_url) {
-      inner.setSourceMapUrl(source_map_url);
+      wasm::ModuleWriter::setSourceMapUrl(source_map_url);
     }
   
     void writeText(Module& wasm,
                    const std::string& filename) {
-      inner.writeText(wasm, std::string(filename));
+      wasm::ModuleWriter::writeText(wasm, std::string(filename));
     }
 
     void writeBinary(Module& wasm,
                      const std::string& filename) {
-      inner.writeBinary(wasm, std::string(filename));
+      wasm::ModuleWriter::writeBinary(wasm, std::string(filename));
     }
   };
     
@@ -131,27 +120,25 @@ namespace wasm_shims {
 }
 
 namespace wasm_shims {
-  struct InliningOptions {
-    wasm::InliningOptions inner;
-
+  struct InliningOptions : wasm::InliningOptions {
     void setAlwaysInlineMaxSize(uint32_t size) {
-      inner.alwaysInlineMaxSize = size;
+      this->alwaysInlineMaxSize = size;
     }
 
     void setOneCallerInlineMaxSize(uint32_t size) {
-      inner.oneCallerInlineMaxSize = size;
+      this->oneCallerInlineMaxSize = size;
     }
 
     void setFlexibleInlineMaxSize(uint32_t size) {
-      inner.flexibleInlineMaxSize = size;
+      this->flexibleInlineMaxSize = size;
     }
 
     void setAllowFunctionsWithLoops(bool allow) {
-      inner.allowFunctionsWithLoops = allow;
+      this->allowFunctionsWithLoops = allow;
     }
 
     void setPartialInliningIfs(uint32_t number) {
-      inner.partialInliningIfs = number;
+      this->partialInliningIfs = number;
     }
   };
     
@@ -161,51 +148,49 @@ namespace wasm_shims {
 }
 
 namespace wasm_shims {
-  struct PassOptions {
-    wasm::PassOptions inner;
-
+  struct PassOptions : wasm::PassOptions {
     void setValidate(bool validate) {
-      inner.validate = validate;
+      this->validate = validate;
     }
 
     void setValidateGlobally(bool validate) {
-      inner.validateGlobally = validate;
+      this->validateGlobally = validate;
     }
 
     void setOptimizeLevel(int32_t level) {
-      inner.optimizeLevel = level;
+      this->optimizeLevel = level;
     }
 
     void setShrinkLevel(int32_t level) {
-      inner.shrinkLevel = level;
+      this->shrinkLevel = level;
     }
 
     void setInliningOptions(std::unique_ptr<wasm_shims::InliningOptions> inlining) {
-      inner.inlining = inlining->inner;
+      this->inlining = *inlining;
     }
     
     void setTrapsNeverHappen(bool ignoreTraps) {
-      inner.trapsNeverHappen = ignoreTraps;
+      this->trapsNeverHappen = ignoreTraps;
     }
 
     void setLowMemoryUnused(bool memoryUnused) {
-      inner.lowMemoryUnused = memoryUnused;
+      this->lowMemoryUnused = memoryUnused;
     }
 
     void setFastMath(bool fastMath) {
-      inner.fastMath = fastMath;
+      this->fastMath = fastMath;
     }
 
     void setZeroFilledMemory(bool zeroFilledMemory) {
-      inner.zeroFilledMemory = zeroFilledMemory;
+      this->zeroFilledMemory = zeroFilledMemory;
     }
 
     void setDebugInfo(bool debugInfo) {
-      inner.debugInfo = debugInfo;
+      this->debugInfo = debugInfo;
     }
 
     void setArguments(const std::string& key, const std::string& value) {
-      inner.arguments[key] = value;
+      this->arguments[key] = value;
     }
   };
 
@@ -215,19 +200,12 @@ namespace wasm_shims {
 }
 
 namespace wasm_shims {
-  struct WasmFeatureSet {
-    FeatureSet inner;
-
-    void setMVP() {
-      inner.setMVP();
-    }
-
-    void setAll() {
-      inner.setAll();
-    }
+  struct WasmFeatureSet : FeatureSet {
+    using FeatureSet::setAll;
+    using FeatureSet::setMVP;
 
     void set(uint32_t feature) {
-      inner.set(feature);
+      FeatureSet::set(feature);
     }
   };
 
@@ -264,28 +242,19 @@ namespace wasm_shims {
   }
 
   void applyFeatures(wasm::Module& wasm, std::unique_ptr<WasmFeatureSet> enabledFeatures, std::unique_ptr<WasmFeatureSet> disabledFeatures) {
-    wasm.features.enable(enabledFeatures->inner);
-    wasm.features.disable(disabledFeatures->inner);
+    wasm.features.enable(*enabledFeatures);
+    wasm.features.disable(*disabledFeatures);
   }
 }
 
 namespace wasm_shims {
-  struct PassRunner {
-    wasm::PassRunner inner;
-
-    PassRunner(Module* wasm) : inner(wasm::PassRunner(wasm)) {}
-    PassRunner(Module* wasm, PassOptions options) : inner(wasm::PassRunner(wasm, options.inner)) {}
+  struct PassRunner : wasm::PassRunner {
+    using wasm::PassRunner::addDefaultOptimizationPasses;
+    using wasm::PassRunner::PassRunner;
+    using wasm::PassRunner::run;
 
     void add(const std::string& passName) {
-      inner.add(std::string(passName));
-    }
-
-    void addDefaultOptimizationPasses() {
-      inner.addDefaultOptimizationPasses();
-    }
-
-    void run() {
-      inner.run();
+      wasm::PassRunner::add(std::string(passName));
     }
   };
 
@@ -308,13 +277,13 @@ namespace wasm_shims {
 
     // The size assertion will fail when `InliningOptions` fields change,
     // which indicates the current test need to be updated.
-    assert(sizeof(inliningOptionsDefaults->inner) == 20);
+    assert(sizeof(*inliningOptionsDefaults) == 20);
     
-    bool isEqual = (inlining->inner.alwaysInlineMaxSize == inliningOptionsDefaults->inner.alwaysInlineMaxSize)
-      && (inlining->inner.oneCallerInlineMaxSize == inliningOptionsDefaults->inner.oneCallerInlineMaxSize)
-      && (inlining->inner.flexibleInlineMaxSize == inliningOptionsDefaults->inner.flexibleInlineMaxSize)
-      && (inlining->inner.allowFunctionsWithLoops == inliningOptionsDefaults->inner.allowFunctionsWithLoops)
-      && (inlining->inner.partialInliningIfs == inliningOptionsDefaults->inner.partialInliningIfs);
+    bool isEqual = (inlining->alwaysInlineMaxSize == inliningOptionsDefaults->alwaysInlineMaxSize)
+      && (inlining->oneCallerInlineMaxSize == inliningOptionsDefaults->oneCallerInlineMaxSize)
+      && (inlining->flexibleInlineMaxSize == inliningOptionsDefaults->flexibleInlineMaxSize)
+      && (inlining->allowFunctionsWithLoops == inliningOptionsDefaults->allowFunctionsWithLoops)
+      && (inlining->partialInliningIfs == inliningOptionsDefaults->partialInliningIfs);
     
     return isEqual;
   }
@@ -328,22 +297,22 @@ namespace wasm_shims {
     //    assert(sizeof(passOptionsDefaults) == 88); // Ubuntu
     // std::cout << " -------- size of optimizationsOptions " << sizeof(passOptionsDefaults);
 
-    bool isEqual = (passOptions->inner.debug == passOptionsDefaults.debug)
-      && (passOptions->inner.validate == passOptionsDefaults.validate)
-      && (passOptions->inner.validateGlobally == passOptionsDefaults.validateGlobally)
-      && (passOptions->inner.optimizeLevel == passOptionsDefaults.optimizeLevel) 
-      && (passOptions->inner.shrinkLevel == passOptionsDefaults.shrinkLevel)
-      && (passOptions->inner.trapsNeverHappen == passOptionsDefaults.trapsNeverHappen)
-      && (passOptions->inner.lowMemoryUnused == passOptionsDefaults.lowMemoryUnused)
-      && (passOptions->inner.fastMath == passOptionsDefaults.fastMath)
-      && (passOptions->inner.zeroFilledMemory == passOptionsDefaults.zeroFilledMemory)
-      && (passOptions->inner.debugInfo == passOptionsDefaults.debugInfo)
+    bool isEqual = (passOptions->debug == passOptionsDefaults.debug)
+      && (passOptions->validate == passOptionsDefaults.validate)
+      && (passOptions->validateGlobally == passOptionsDefaults.validateGlobally)
+      && (passOptions->optimizeLevel == passOptionsDefaults.optimizeLevel) 
+      && (passOptions->shrinkLevel == passOptionsDefaults.shrinkLevel)
+      && (passOptions->trapsNeverHappen == passOptionsDefaults.trapsNeverHappen)
+      && (passOptions->lowMemoryUnused == passOptionsDefaults.lowMemoryUnused)
+      && (passOptions->fastMath == passOptionsDefaults.fastMath)
+      && (passOptions->zeroFilledMemory == passOptionsDefaults.zeroFilledMemory)
+      && (passOptions->debugInfo == passOptionsDefaults.debugInfo)
       // inlining fields comparison
-      && (passOptions->inner.inlining.alwaysInlineMaxSize == passOptionsDefaults.inlining.alwaysInlineMaxSize)
-      && (passOptions->inner.inlining.oneCallerInlineMaxSize == passOptionsDefaults.inlining.oneCallerInlineMaxSize)
-      && (passOptions->inner.inlining.flexibleInlineMaxSize == passOptionsDefaults.inlining.flexibleInlineMaxSize)
-      && (passOptions->inner.inlining.allowFunctionsWithLoops == passOptionsDefaults.inlining.allowFunctionsWithLoops)
-      && (passOptions->inner.inlining.partialInliningIfs == passOptionsDefaults.inlining.partialInliningIfs);
+      && (passOptions->inlining.alwaysInlineMaxSize == passOptionsDefaults.inlining.alwaysInlineMaxSize)
+      && (passOptions->inlining.oneCallerInlineMaxSize == passOptionsDefaults.inlining.oneCallerInlineMaxSize)
+      && (passOptions->inlining.flexibleInlineMaxSize == passOptionsDefaults.inlining.flexibleInlineMaxSize)
+      && (passOptions->inlining.allowFunctionsWithLoops == passOptionsDefaults.inlining.allowFunctionsWithLoops)
+      && (passOptions->inlining.partialInliningIfs == passOptionsDefaults.inlining.partialInliningIfs);
    
     return isEqual;
   }

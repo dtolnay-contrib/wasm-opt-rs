@@ -34,7 +34,7 @@ impl ModuleReader {
 
     pub fn set_dwarf(&mut self, dwarf: bool) {
         let this = self.0.pin_mut();
-        this.setDwarf(dwarf);
+        this.setDWARF(dwarf);
     }
 
     pub fn read_text(&mut self, path: &Path, wasm: &mut Module) -> Result<(), cxx::Exception> {
